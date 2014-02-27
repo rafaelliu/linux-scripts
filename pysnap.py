@@ -109,6 +109,7 @@ class TileManager(object):
 		self.window_manager = self.get_window_manager()
 		monitors = xinerama.get_monitors()
 		self.workareas = [ Rectangle(*mon) for mon in rect.monitor_rects(monitors) ]
+		self.workareas = sorted(self.workareas, key=lambda rect: rect.x) 
 	
 	def get_tile(self, wid):
 		return Tile(wid, self.window_manager)
@@ -153,7 +154,7 @@ class TileManager(object):
 		return max_tuple[0]
 		
 	def get_monitor_areas(self):
-		return self.workareas[:]
+		return self.workareas
 
 	def get_monitor_area(self, mid):
 		return self.workareas[mid]
@@ -218,27 +219,10 @@ wid = tm.get_active_window()
 mid = tm.get_monitor_idx(wid)
 tile = tm.get_tile(wid)
 
-def move_left(mid):
-	logging.debug("Tiling left")
-	if Adjacency.ll in win_rect.get_adjacency(mon_rect):
-		logging.debug("Window is adjacent to the left of %d" % mid )
-		try:
-			mid = mid - 1
-			mon_rect = tm.get_monitor_area(mid)
-			logging.debug("There's a monitor do the left, moving to %d" % mid )
-		except:
-			pass
+logging.debug(tm.get_monitor_areas())
 
-def move_right(mid):
-	logging.debug("Tiling left")
-	if Adjacency.ll in win_rect.get_adjacency(mon_rect):
-		logging.debug("Window is adjacent to the left of %d" % mid )
-		try:
-			mid = mid - 1
-			mon_rect = tm.get_monitor_area(mid)
-			logging.debug("There's a monitor do the left, moving to %d" % mid )
-		except:
-			pass
+for area in tm.get_monitor_areas():
+	logging.debug("%s", area)
 
 if action in ["left", "right", "top", "bottom"]:
 
@@ -253,12 +237,14 @@ if action in ["left", "right", "top", "bottom"]:
 		if Adjacency.ll in win_rect.get_adjacency(mon_rect):
 			logging.debug("Window is adjacent to the left of %d" % mid )
 			if mid - 1 >= 0:
-				mon_rect = tm.get_monitor_area(mid-1)
+				mid = mid - 1
+				mon_rect = tm.get_monitor_area(mid)
 
 				mon_rect.x = mon_rect.x + mon_rect.width/2
 				mon_rect.width = mon_rect.width/2
 				logging.debug("There's a monitor do the left, moving to %d (%s)" % ( mid, mon_rect ) )
 		else:
+			logging.debug("There's a monitor do the left, moving to %d (%s)" % ( mid, mon_rect ) )
 			mon_rect.width = mon_rect.width/2
 
 	elif action == "right":
@@ -268,7 +254,8 @@ if action in ["left", "right", "top", "bottom"]:
 		if Adjacency.rr in win_rect.get_adjacency(mon_rect):
 			logging.debug("Window is adjacent to the right of %d" % mid )
 			if mid + 1 < len(tm.get_monitor_areas()):
-				mon_rect = tm.get_monitor_area(mid+1)
+				mid = mid + 1
+				mon_rect = tm.get_monitor_area(mid)
 
 				mon_rect.width = mon_rect.width/2
 				logging.debug("There's a monitor do the right, moving to %d (%s)" % ( mid, mon_rect ) )
